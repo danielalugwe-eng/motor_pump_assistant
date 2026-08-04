@@ -1,0 +1,6 @@
+openai=2.48.0
+OpenAI=<class 'openai.OpenAI'>
+has chat=True
+has responses=True
+has embeddings=True
+has completions=True

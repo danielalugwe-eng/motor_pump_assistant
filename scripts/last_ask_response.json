@@ -1,0 +1,10 @@
+{
+  "route": "rag",
+  "answer": "The manual excerpts do not specify the exact location of the fuses. If you have a more specific question about the fuses or need assistance with a particular aspect of their replacement, please let me know!",
+  "context_preview": "the transformer) \n3) 1 secondary fuse for  24V transformer (24Vac \ninput on the board) \n4) 1 fuse for 24V auxiliary components \n5) 1 fuse for 230V auxiliary components \n6) 1 primary fuse for 230V transformer (powering \nthe transformer) \n \n \nTo change the fuses see section 6.6.2 \n \n         Warning \nIf fuses keep blowing it may be an indication of a \nfault of the devices installed on the machine; in \nsuch cases contact Technical Support. \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n1 6 5 \n2 \n3 \n4 \nAll manuals and user guides at all-guides.com\n\nthe cable or the cable holder \n5) Reconnect the wires into the connection \nterminal \n6) Remount the protective box of the connection \nterminal and fix it in place with the screws. \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n6.6.2 Replacement of fuses \n \nTo replace the fuses act as follows: \n \n1) Unplug the machine \n2) Open the electric panel by releasing the lateral \nhooks \n3) Remove each fuse from the power board an",
+  "sources": [
+    "top_ex.pdf page 15",
+    "top_ex.pdf page 39",
+    "top_ex.pdf page 8"
+  ]
+}
