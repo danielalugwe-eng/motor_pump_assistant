@@ -10,9 +10,9 @@ from openai import OpenAI
 load_dotenv()
 
 
-def search_manual(query: str, k: int = 4) -> dict[str, Any]:
+def search_manual(query: str, k: int = 4, collection_name: str = "manual_chunks") -> dict[str, Any]:
     chroma_client = chromadb.PersistentClient(path="data/chroma_db")
-    collection = chroma_client.get_or_create_collection("manual_chunks")
+    collection = chroma_client.get_or_create_collection(collection_name)
 
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
