@@ -9,3 +9,10 @@ wheels/
 # Virtual environments
 .venv
 .env
+
+# Generated data stores and runtime artifacts
+data/chroma_db/
+data/chroma_db_debug/
+scripts/*.json
+scripts/*.txt
+terminal_*.txt
