@@ -1,0 +1,33 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: mpps-api
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      PYTHONPATH: /app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui
+    container_name: mpps-ui
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      API_BASE_URL: http://api:8000
+      PYTHONPATH: /app
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+    restart: unless-stopped

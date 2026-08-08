@@ -1,5 +1,9 @@
+import os
+
 import streamlit as st
 import requests
+
+API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
 
 st.set_page_config(page_title="Motor Pump Assistant", page_icon="⚙️")
 st.title("Motor Pump Assistant")
@@ -38,7 +42,7 @@ if mode == "Manual Chat":
         with st.spinner("Looking up the manual..."):
             try:
                 resp = requests.post(
-                    "http://127.0.0.1:8000/ask",
+                    f"{API_BASE_URL}/ask",
                     json={"text": q, "answer_style": answer_style},
                     timeout=30,
                 )
@@ -110,7 +114,7 @@ else:
                 try:
                     files = {"file": (uploaded.name, uploaded.getvalue(), "application/octet-stream")}
                     resp = requests.post(
-                        "http://127.0.0.1:8000/predict_raw",
+                        f"{API_BASE_URL}/predict_raw",
                         files=files,
                         data={"signal_key": signal_key},
                         timeout=60,
@@ -166,7 +170,7 @@ else:
             }
             with st.spinner("Evaluating sensor data..."):
                 try:
-                    resp = requests.post("http://127.0.0.1:8000/predict", json=payload, timeout=30)
+                    resp = requests.post(f"{API_BASE_URL}/predict", json=payload, timeout=30)
                     data = resp.json()
                 except Exception as exc:
                     data = {"route": "error", "answer": f"Request failed: {exc}"}

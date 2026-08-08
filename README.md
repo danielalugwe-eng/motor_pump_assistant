@@ -207,6 +207,101 @@ When that happens, a model trained on older data may start making worse predicti
 
 ---
 
+## Reproducible runtime with Docker
+
+This repository includes containerized runtime for both services:
+
+- FastAPI backend on port `8000`
+- Streamlit UI on port `8501`
+
+### Prerequisites
+
+- Docker Desktop (or Docker Engine)
+- OpenAI API key
+
+### Run with Docker Compose
+
+1. Set your OpenAI API key in your shell:
+
+```powershell
+$env:OPENAI_API_KEY="your_key_here"
+```
+
+2. Build and start both containers:
+
+```powershell
+docker compose up --build -d
+```
+
+3. Open the UI:
+
+- `http://localhost:8501`
+
+4. Stop containers:
+
+```powershell
+docker compose down
+```
+
+### Optional: ingest manuals from inside Docker
+
+If you need to rebuild vector chunks:
+
+```powershell
+docker compose run --rm api uv run python -m src.rag.ingest
+```
+
+---
+
+## Reproducible infrastructure with Terraform (Docker provider)
+
+Terraform in this project provisions the same two Docker containers and network.
+
+Location:
+
+- `infra/terraform/`
+
+### Prerequisites
+
+- Terraform `>= 1.6`
+- Docker running locally
+
+### Run with Terraform
+
+1. Go to the Terraform directory:
+
+```powershell
+cd infra/terraform
+```
+
+2. Create a tfvars file from the example:
+
+```powershell
+copy terraform.tfvars.example terraform.tfvars
+```
+
+3. Edit `terraform.tfvars` and set `openai_api_key`.
+
+4. Initialize and apply:
+
+```powershell
+terraform init
+terraform apply
+```
+
+5. Destroy when done:
+
+```powershell
+terraform destroy
+```
+
+Terraform outputs:
+
+- `api_url` (default `http://localhost:8000`)
+- `ui_url` (default `http://localhost:8501`)
+
+---
+
 ## Notes
 
 This project is a practical starter system rather than a fully production-grade monitoring platform. It is designed to be understandable, modular, and easy to extend.

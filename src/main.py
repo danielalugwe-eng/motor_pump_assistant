@@ -9,8 +9,12 @@ import numpy as np
 import joblib
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, UploadFile
-from openai import OpenAI
 from pydantic import BaseModel
+
+try:
+    from openai import OpenAI
+except Exception:  # pragma: no cover - optional dependency guard
+    OpenAI = None
 
 from src.data_utils import (
     build_breakdown_signal,
@@ -23,8 +27,17 @@ from src.rag.search import search_manual
 load_dotenv()
 
 app = FastAPI(title="Motor Pump Predictive System")
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-clf = joblib.load("models/best_fault_classifier.pkl") if os.path.exists("models/best_fault_classifier.pkl") else None
+client = None
+if OpenAI is not None:
+    api_key = os.getenv("OPENAI_API_KEY")
+    if api_key:
+        client = OpenAI(api_key=api_key)
+clf = None
+if os.path.exists("models/best_fault_classifier.pkl"):
+    try:
+        clf = joblib.load("models/best_fault_classifier.pkl")
+    except Exception:  # pragma: no cover - graceful fallback if model is invalid
+        clf = None
 
 SELECTED_FEATURES = ["rms", "kurtosis", "crest_factor", "dominant_freq", "spectral_energy", "spectral_entropy"]
 
