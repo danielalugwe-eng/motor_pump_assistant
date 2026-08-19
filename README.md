@@ -25,6 +25,98 @@ Monitoring connects the two paths. The app can replay known sensor rows, identif
 
 ---
 
+## How to run
+
+### Prerequisites
+
+- Python `3.12` or newer
+- [uv](https://docs.astral.sh/uv/)
+- An OpenAI API key for embeddings and manual-question answering
+- The CWRU bearing files under `data/raw/CWRU_Bearing_NumPy/`
+- Docker Desktop, only if using the containerized setup
+
+### Local setup
+
+From the repository root, install the pinned project environment:
+
+```powershell
+uv sync
+```
+
+Create a `.env` file in the repository root and add your OpenAI key:
+
+```env
+OPENAI_API_KEY=your_key_here
+```
+
+Build the processed vibration features and train the diagnostic model:
+
+```powershell
+uv run python -m src.features.run_pipeline
+uv run python -m src.features.model_training
+```
+
+Ingest the equipment manual into Chroma when the manual index needs to be created or refreshed:
+
+```powershell
+uv run python -m src.rag.ingest
+```
+
+Start the API in one terminal:
+
+```powershell
+uv run uvicorn src.main:app --reload --port 8000
+```
+
+Start the Streamlit assistant in a second terminal:
+
+```powershell
+uv run streamlit run src/app.py --server.port 8501
+```
+
+Open the application at [http://localhost:8501](http://localhost:8501). The API is available at [http://localhost:8000](http://localhost:8000), with interactive endpoint documentation at [http://localhost:8000/docs](http://localhost:8000/docs).
+
+### Docker Compose setup
+
+With Docker Desktop running, set the API key in PowerShell and start both services:
+
+```powershell
+$env:OPENAI_API_KEY="your_key_here"
+docker compose up --build -d
+```
+
+Use the same URLs:
+
+- Streamlit assistant: [http://localhost:8501](http://localhost:8501)
+- FastAPI service: [http://localhost:8000](http://localhost:8000)
+
+Stop the containers when finished:
+
+```powershell
+docker compose down
+```
+
+To rebuild the manual index inside the API container:
+
+```powershell
+docker compose run --rm api uv run python -m src.rag.ingest
+```
+
+### Evaluation and monitoring commands
+
+Generate the evaluation reports and drift report with:
+
+```powershell
+uv run python scripts/generate_accuracy_report.py
+uv run python scripts/evaluate_retrieval.py
+uv run python scripts/evaluate_llm_prompts.py
+uv run python -m src.monitoring.drift
+```
+
+The Streamlit **Monitoring Dashboard** displays collected feedback. Feedback is stored locally in `data/feedback/feedback.jsonl` and is created after a user submits a rating in the interface.
+
+---
+
 ## Folder-by-folder explanation
 
 ### data/
