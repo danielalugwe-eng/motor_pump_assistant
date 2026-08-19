@@ -1,21 +1,27 @@
-# Motor Pump Predictive System
+# Motor Pump Diagnostic Assistant
 
-This project is a small predictive maintenance workflow for a pump-like machine. In plain English, it does two main jobs:
+The Motor Pump Diagnostic Assistant is an end-to-end AI application for detecting bearing faults, answering maintenance questions, and monitoring diagnostic reliability over time. It combines vibration-signal analysis with a grounded equipment-manual assistant so a maintenance user can move from **"What is wrong with this pump?"** to **"What should I do next?"** in one interface.
 
-1. It learns to recognize healthy versus faulty vibration patterns from the CWRU bearing dataset.
-2. It prepares the project for later manual-answering workflows, model monitoring, and retraining when the incoming data changes.
+The project uses the public CWRU bearing dataset as its diagnostic training source and a pump equipment manual as its knowledge base. The application can:
 
-The whole system is built in a way that is easy to understand: first it prepares the data, then it trains a few models, then it checks whether the data has drifted, and finally it can retrain when needed.
+1. Extract vibration features from raw `.npz` files and classify healthy or faulty bearing behavior.
+2. Retrieve relevant manual passages and generate answers with citations to the source document.
+3. Expose the diagnostic and RAG workflows through a FastAPI service and Streamlit interface.
+4. Replay holdout sensor rows as a live feed, trigger repeated-fault alerts, collect user feedback, and display monitoring metrics.
+5. Evaluate model accuracy, retrieval strategies, and answer-prompt styles before selecting the active approach.
+
+This is a practical diagnostic assistant rather than an autonomous repair system. Its predictions support maintenance decisions; they do not replace inspection, safety procedures, or qualified engineering judgment.
 
 ---
 
-## What the project is trying to do
+## Diagnostic assistant workflow
 
-Think of this project as a tiny AI assistant for machine health.
+The system has two connected paths:
 
-- The prediction part listens to vibration signals and tries to decide whether the machine looks healthy or faulty.
-- The monitoring part watches for changes in the data so the model does not silently become less trustworthy over time.
-- The retraining part gives you a simple way to rebuild the model if the incoming data starts looking different from the training data.
+- **Vibration diagnosis:** raw pump-like vibration data is windowed, transformed into statistical and spectral features, scored by the selected classifier, and returned with a predicted condition and confidence.
+- **Maintenance guidance:** a user asks a question in plain language, the assistant retrieves relevant manual chunks from Chroma, reranks them with hybrid retrieval, and asks the LLM to answer only from the supplied evidence.
+
+Monitoring connects the two paths. The app can replay known sensor rows, identify repeated high-confidence fault predictions, record user feedback, compare current data with the reference distribution, and provide a retraining path when drift is detected.
 
 ---
 
@@ -66,17 +72,19 @@ This folder contains the monitoring and retraining logic.
 - drift.py: creates an Evidently drift report to see whether new data differs from the training data.
 - retrain.py: checks whether retraining should happen and triggers the training flow if needed.
 
-#### src/main.py
-This is the FastAPI service entry point.
+### src/main.py
+This is the FastAPI service entry point for the diagnostic assistant.
 
-- It exposes a small API that can be used by another app or interface.
-- It is meant to route user questions or requests to the right part of the system.
+- It exposes manual-question, sensor-prediction, raw-file upload, replay, and feedback endpoints.
+- It routes maintenance questions to the RAG workflow and diagnostic questions to the vibration classifier.
+- It returns source information, confidence values, and alert results for the UI or other clients.
 
-#### src/app.py
-This is the Streamlit chat-style UI.
+### src/app.py
+This is the Streamlit interface for the Motor Pump Diagnostic Assistant.
 
-- It gives you a simple web interface where you can ask questions or interact with the system.
-- It is helpful for demonstrating the workflow without building a larger app.
+- It supports manual chat, raw vibration uploads, manual feature prediction, and live monitoring replay.
+- It collects feedback on answers and predictions.
+- Its monitoring dashboard shows feedback, source quality, confidence, and activity trends.
 
 ---
 
@@ -168,6 +176,42 @@ The project now supports several model families instead of relying on just one.
 
 The system evaluates each one and keeps the best-performing option for later use.
 
+## Retrieval evaluation
+
+The RAG flow is evaluated with two retrieval approaches:
+
+- vector search from Chroma
+- hybrid search that combines vector retrieval with keyword reranking
+
+The best-performing option is documented in:
+
+- reports/retrieval_evaluation_report.md
+- reports/retrieval_evaluation_report.json
+
+Run it with:
+
+```bash
+uv run python scripts/evaluate_retrieval.py
+```
+
+## LLM prompt evaluation
+
+The final-answer prompt is evaluated with two styles:
+
+- short answers
+- detailed answers
+
+The selected style is documented in:
+
+- reports/llm_evaluation_report.md
+- reports/llm_evaluation_report.json
+
+Run it with:
+
+```bash
+uv run python scripts/evaluate_llm_prompts.py
+```
+
 ---
 
 ## Why hyperparameter tuning matters
@@ -195,15 +239,58 @@ This can happen when:
 
 When that happens, a model trained on older data may start making worse predictions. Drift monitoring helps catch that, and retraining gives you a path to update the model.
 
+## User feedback and monitoring dashboard
+
+The app now collects user feedback on manual answers, sensor predictions, and live-monitoring events. Feedback is stored in:
+
+- data/feedback/feedback.jsonl
+
+The Streamlit monitoring dashboard shows:
+
+- feedback counts by rating
+- feedback counts by route
+- source-quality mix
+- average confidence by rating
+- feedback over time
+- recent feedback entries
+
 ---
 
-## Recommended workflow
+## Recommended diagnostic workflow
 
-1. Run the pipeline to create the processed feature data.
-2. Train and compare the available models.
-3. Review the metrics and select the best model.
-4. Use the drift report to monitor new data.
-5. Retrain when the data changes enough to make the old model less reliable.
+1. Run the ingestion or feature pipeline to create the diagnostic data and manual knowledge base.
+2. Train and compare the available fault-classification models.
+3. Review the model, retrieval, and LLM evaluation reports.
+4. Start the API and Streamlit assistant.
+5. Upload a vibration file or enter extracted features to receive a diagnostic result.
+6. Ask the manual assistant for maintenance guidance and review its cited sources.
+7. Use live replay, drift monitoring, feedback, and retraining checks to maintain diagnostic reliability.
+
+---
+
+## Model accuracy (documented)
+
+The latest evaluated classifier metrics are documented in:
+
+- reports/model_accuracy_report.md
+- reports/model_accuracy_report.json
+
+Evaluation setup:
+- Data source: data/processed/features.parquet
+- Features: rms, kurtosis, crest_factor, dominant_freq, spectral_energy, spectral_entropy
+- Holdout split: 20% test set, stratified by label, random_state=42
+- Holdout size: 613 rows
+
+Latest holdout result:
+- Overall accuracy: 1.0000
+- Macro F1: 1.0000
+- Weighted F1: 1.0000
+
+To regenerate this report:
+
+```bash
+uv run python scripts/generate_accuracy_report.py
+```
 
 ---
 
