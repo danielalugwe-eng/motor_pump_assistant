@@ -14,6 +14,20 @@ This is a practical diagnostic assistant rather than an autonomous repair system
 
 ---
 
+## Problem we are solving
+
+Motor pumps can develop bearing and mechanical faults before a complete breakdown occurs. In many maintenance settings, the warning signs are buried in vibration recordings, while the instructions needed to inspect, remove, replace, or safely maintain a component are spread across technical manuals. This creates three practical problems:
+
+- **Faults are difficult to identify early:** a technician may need to inspect large vibration files manually or rely on experience to recognize abnormal patterns.
+- **Diagnosis and maintenance guidance are disconnected:** a model may flag an abnormal reading without explaining what the manual recommends doing next.
+- **Diagnostic quality can degrade over time:** changes in sensors, operating conditions, or machine wear can make an older model less reliable without an obvious warning.
+
+The Motor Pump Diagnostic Assistant addresses this by combining vibration-based fault classification with retrieval-augmented manual guidance. It returns a predicted condition and confidence, grounds maintenance answers in source passages, monitors data and feedback, and provides alerts or retraining signals when the diagnostic workflow needs attention.
+
+The intended users are maintenance technicians, reliability engineers, and developers evaluating a reproducible predictive-maintenance workflow. The project focuses on decision support: it helps a person investigate a pump condition and find relevant procedures, while leaving final safety and repair decisions to qualified personnel.
+
+---
+
 ## Diagnostic assistant workflow
 
 The system has two connected paths:
